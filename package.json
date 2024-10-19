@@ -1,0 +1,41 @@
+{
+  "name": "facil-erp-back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "ts:start": "ts-node src/server.ts",
+    "dev": "tsnd --respawn --transpile-only --exit-child src/server.ts",
+    "debug": "tsnd --respawn --transpile-only --exit-child --debug src/server.ts",
+    "migrate": "npx prisma migrate dev",
+    "studio": "npx prisma studio",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/date-fns": "^2.6.0",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.7.5",
+    "@types/pdfmake": "^0.2.9",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "pdfmake": "^0.2.14",
+    "prisma": "^5.20.0"
+  }
+}
