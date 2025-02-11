@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
+import { Router } from "express";
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient()
 const SECRET_KEY = 'secret_key'
 
 // Login endpoint
-import { Router } from "express";
-import { PrismaClient } from '@prisma/client';
 
 const loginRouter = Router()
 
@@ -20,7 +21,7 @@ loginRouter.post('/login', async (req, res) => {
             if (!user || !bcrypt.compareSync(password, user.password)) {
                 return res.status(401).send('Invalid credentials');
             }
-            const token = jwt.sign({ user }, SECRET_KEY, { expiresIn: '8h' });
+            const token = jwt.sign({ ...user }, SECRET_KEY, { expiresIn: '8h' });
             return res.json({ token });
         } catch (error) {
             console.error(error);
