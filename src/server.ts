@@ -6,6 +6,7 @@ import contractRouter from './routes/contractRoutes';
 import userRouter from './routes/userRoutes';
 import loginRouter from './routes/loginRoutes';
 import budgetRouter from './routes/budgetRoutes';
+import clientRouter from './routes/clientRoutes';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(loginRouter)
 app.use(verifyToken);
 
 app.use(contractRouter)
+app.use(clientRouter)
 app.use(userRouter)
 app.use(budgetRouter)
 

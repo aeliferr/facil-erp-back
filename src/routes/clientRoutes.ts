@@ -37,8 +37,26 @@ clientRouter.post('/clients', async (req, res) => {
         const { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
 
         const { user } = req
-
+        
         await prisma.client.create({
+            data: { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
+        })
+
+        res.status(200).send()
+    } catch (error) {
+        console.log(error)
+        res.status(400).json(error)
+    }
+})
+
+clientRouter.put('/clients', async (req, res) => {
+    try {
+        const { id, name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
+
+        const { user } = req
+        
+        await prisma.client.update({
+            where: { id },
             data: { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
         })
 
