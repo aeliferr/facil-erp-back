@@ -28,10 +28,10 @@ contractRouter.get('/contract/from-budget/:budgetId/print', async (req, res) => 
         // Define font files
         var fonts = {
             Roboto: {
-                normal: `${__dirname}/fonts/Roboto-Regular.ttf`,
-                bold: `${__dirname}/fonts/Roboto-Medium.ttf`,
-                italics: `${__dirname}/fonts/Roboto-Italic.ttf`,
-                bolditalics: `${__dirname}/fonts/Roboto-MediumItalic.ttf`
+                normal: `${__dirname}/../assets/fonts/Roboto/Roboto-Regular.ttf`,
+                bold: `${__dirname}/../assets/fonts/Roboto/Roboto-Medium.ttf`,
+                italics: `${__dirname}/../assets/fonts/Roboto/Roboto-Italic.ttf`,
+                bolditalics: `${__dirname}/../assets/fonts/Roboto/Roboto-MediumItalic.ttf`
             }
         };
 
@@ -52,13 +52,13 @@ contractRouter.get('/contract/from-budget/:budgetId/print', async (req, res) => 
             pageSize: 'A4',
             content: [
                 {
-                    image: `${__dirname}/logo_artfaav_rgb.png`,
+                    image: `${__dirname}/../assets/logo_artfaav_rgb.png`,
                     width: 150,
                     style: 'center',
                     alignment: 'center'
                 },
                 {
-                    text: 'RUA WILSOM BASANELLI Nº100 – MINIDIST. IND.\nSÃO JOSE DO RIO PRETO - SP\nFONE: 17 – 3513-0326',
+                    text: 'RUA PEDRO MARTINS Nº380 – MINI DIST. IND. ADAIL VETORAZZO\nSÃO JOSE DO RIO PRETO - SP\nFONE: 17 – 3513-0326',
                     style: 'subheader'
                 },
                 {
@@ -67,18 +67,19 @@ contractRouter.get('/contract/from-budget/:budgetId/print', async (req, res) => 
                 },
                 {
                     text: [
-                        { text: 'DE UM LADO A EMPRESA ', bold: true },
-                        'A L FERRARI MOVEIS, SITUADA NO ENDEREÇO ACIMA CITADO, CNPJ 31.696.626/0001-08, DAQUI EM DIANTE SIMPLESMENTE CHAMADA DE ',
+                        { text: 'DE UM LADO A EMPRESA '},
+                        { text: 'A L FERRARI MOVEIS', bold: true }, 
+                        ' SITUADA NO ENDEREÇO ACIMA CITADO, CNPJ 31.696.626/0001-08, DAQUI EM DIANTE SIMPLESMENTE CHAMADA DE ',
                         { text: 'CONTRATADA', bold: true },
                         ', E DO OUTRO LADO, ',
                         { text: budget.client.name, bold: true },
-                        `, PORTADOR DO CPF: CPF DO CLIENTE, RG: RG DO CLIENTE, ESTABELECIDO NA ${budget.client.street}, ${budget.client.number}, ${budget.client.complement}, ${budget.client.zipcode}, ${budget.client.city} - ${budget.client.state}. DAQUI POR DIANTE SIMPLESMENTE CHAMADO DE `,
+                        `, PORTADOR DO CPF: CPF DO CLIENTE, RG: RG DO CLIENTE, ESTABELECIDO NA ${budget.client.street || ''}, ${budget.client.number || ''}, ${budget.client.complement || ''}, ${budget.client.zipcode || ''}, ${budget.client.city || ''} - ${budget.client.state || ''}. DAQUI POR DIANTE SIMPLESMENTE CHAMADO DE `,
                         { text: 'CONTRATANTE', bold: true },
                         ', TEM ENTRE SI JUSTO E CONTRATADO OS SERVIÇOS E MÓVEIS A SEREM EXECUTADOS, CONFORME DESCRIÇÃO A SEGUIR E PROJETOS APRESENTADOS.'
                     ]
                 },
                 {
-                    text: '\n1a) Confecção e montagem conforme abaixo:\n',
+                    text: '\n1a) CONFECÇÃO E MONTAGEM CONFORME DESCRITO ABAIXO:\n',
                     style: 'section'
                 },
                 {

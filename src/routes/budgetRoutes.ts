@@ -2,6 +2,7 @@ import PdfPrinter from "pdfmake";
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
+import { addMonths, format } from "date-fns";
 const prisma = new PrismaClient()
 
 const budgetRouter = Router()
@@ -80,7 +81,7 @@ budgetRouter.put('/budget/:id', async (req, res) => {
     }
 })
 
-budgetRouter.get('/budget', async (req, res) => {
+budgetRouter.get('/budgets', async (req, res) => {
     try {
         const { user } = req
 
@@ -100,7 +101,7 @@ budgetRouter.get('/budget', async (req, res) => {
     }
 });
 
-budgetRouter.get('/budget/:id', async (req, res) => {
+budgetRouter.get('/budgets/:id', async (req, res) => {
     try {
         const { id } = req.params
 
@@ -110,6 +111,7 @@ budgetRouter.get('/budget/:id', async (req, res) => {
             },
             include: {
                 vendor: true,
+                client: true,
                 budgetItems: true
             }
         })
@@ -139,10 +141,10 @@ budgetRouter.get('/budget/:id/print', async (req, res) => {
         // Define font files
         var fonts = {
             Roboto: {
-                normal: `${__dirname}/fonts/Roboto-Regular.ttf`,
-                bold: `${__dirname}/fonts/Roboto-Medium.ttf`,
-                italics: `${__dirname}/fonts/Roboto-Italic.ttf`,
-                bolditalics: `${__dirname}/fonts/Roboto-MediumItalic.ttf`
+                normal: `${__dirname}/../assets/fonts/Roboto/Roboto-Regular.ttf`,
+                bold: `${__dirname}/../assets/fonts/Roboto/Roboto-Medium.ttf`,
+                italics: `${__dirname}/../assets/fonts/Roboto/Roboto-Italic.ttf`,
+                bolditalics: `${__dirname}/../assets/fonts/Roboto/Roboto-MediumItalic.ttf`
             }
         };
 
@@ -182,7 +184,7 @@ budgetRouter.get('/budget/:id/print', async (req, res) => {
             pageSize: 'A4',
             content: [
                 {
-                    image: `${__dirname}/logo_artfaav_rgb.png`,
+                    image: `${__dirname}/../assets/logo_artfaav_rgb.png`,
                     width: 150,
                     style: 'center'
                 },
@@ -192,7 +194,7 @@ budgetRouter.get('/budget/:id/print', async (req, res) => {
                     alignment: 'left'
                 },
                 {
-                    text: `Data de validade: ${new Date().toLocaleDateString('pt-Br')}`,
+                    text: `Data de validade: ${format(addMonths(new Date(), 1), 'dd/MM/yyyy')}`,
                     style: 'subheader',
                     alignment: 'left'
                 },
@@ -243,6 +245,7 @@ budgetRouter.get('/budget/:id/print', async (req, res) => {
         var chunks: Uint8Array[] = [];
 
         var pdfDoc = printer.createPdfKitDocument(dd, options);
+        pdfDoc.info.Title = "Orçamento"
 
         pdfDoc.on('data', (chunk) => {
             chunks.push(chunk)
@@ -250,9 +253,9 @@ budgetRouter.get('/budget/:id/print', async (req, res) => {
 
         pdfDoc.on('end', () => {
             const result = Buffer.concat(chunks)
-            res.setHeader('Content-Disposition', 'attachment; filename="invoice.pdf"');
-            res.setHeader('Content-Type', 'application/pdf');
-            res.contentType('application/pdf')
+            res.setHeader('Content-Disposition', 'filename="invoice.pdf"');
+            res.setHeader('Content-Type', 'application/pdf; name="MyFile.pdf"');
+            res.contentType('application/pdf; name="MyFile.pdf"')
             res.send(result)
         })
 

@@ -49,9 +49,10 @@ clientRouter.post('/clients', async (req, res) => {
     }
 })
 
-clientRouter.put('/clients', async (req, res) => {
+clientRouter.put('/clients/:id', async (req, res) => {
     try {
-        const { id, name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
+        const { id } = req.params
+        const { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
 
         const { user } = req
         
