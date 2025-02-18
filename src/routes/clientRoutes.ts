@@ -34,12 +34,12 @@ clientRouter.get('/clients/:id', async (req, res) => {
 
 clientRouter.post('/clients', async (req, res) => {
     try {
-        const { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
+        const { name, phone, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
 
         const { user } = req
         
         await prisma.client.create({
-            data: { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
+            data: { name, phone, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
         })
 
         res.status(200).send()
@@ -52,13 +52,13 @@ clientRouter.post('/clients', async (req, res) => {
 clientRouter.put('/clients/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
+        const { name, type, phone, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
 
         const { user } = req
         
         await prisma.client.update({
             where: { id },
-            data: { name, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
+            data: { name, type, phone, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
         })
 
         res.status(200).send()
