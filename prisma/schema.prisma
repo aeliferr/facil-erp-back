@@ -58,8 +58,8 @@ model Client {
 
 enum BudgetStatus {
   pending
-  cancelled
   done
+  cancelled
 }
 
 model Budget {
@@ -69,9 +69,34 @@ model Budget {
   clientId String @db.Uuid
   vendor User @relation(fields: [vendorId], references: [id])
   vendorId String @db.Uuid
+  paymentMethod PaymentMethod
+  installment Int @default(1)
+  downPaymentPercentage Int @default(0)
+  daysAfterDefinitionAndMeasurement Int @default(60)
+  workDays Boolean @default(false)
+  contract Contract? @relation(fields: [contractid], references: [id])
+  contractid String? @db.Uuid
 
   budgetItems BudgetItem[]
   @@map("budgets")
+}
+
+enum PaymentMethod {
+  debit
+  credit
+  pix
+  boleto
+  money
+}
+
+model Contract {
+  id String @id @db.Uuid @default(uuid())
+  definitionDate DateTime? @db.Date
+  measurementDate DateTime? @db.Date
+  signature String @db.VarChar(250)
+  
+  @@map("contracts")
+  Budget Budget[]
 }
 
 model BudgetItem {

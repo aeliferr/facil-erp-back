@@ -10,23 +10,22 @@ const budgetRouter = Router()
 
 budgetRouter.post('/budget', async (req, res) => {
     try {
-        const { clientId, budgetItems } = req.body
+        const budgetData = req.body
         const { user } = req
 
-        const budget = {
-            clientId,
-            vendorId: user!.id,
-            budgetItems
-        }
+        const budget = { ...budgetData, vendorId: user!.id } 
 
         await prisma.budget.create({
             data: {
+                ...budget,
+                clientId: undefined,
+                vendorId: undefined,
                 budgetItems: {
                     create: budget.budgetItems
                 },
                 client: {
                     connect: {
-                        id: clientId,
+                        id: budget.clientId,
                     }
                 },
                 vendor: {
