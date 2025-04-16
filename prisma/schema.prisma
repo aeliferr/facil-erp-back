@@ -56,8 +56,15 @@ model Client {
   @@map("clients")
 }
 
+enum BudgetStatus {
+  pending
+  cancelled
+  done
+}
+
 model Budget {
   id String @id @db.Uuid @default(uuid())
+  status BudgetStatus @default(pending)
   client Client @relation(fields: [clientId], references: [id])
   clientId String @db.Uuid
   vendor User @relation(fields: [vendorId], references: [id])
