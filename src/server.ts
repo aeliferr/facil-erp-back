@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import verifyToken from './middlewares/verifyToken';
 import contractRouter from './routes/contractRoutes';
@@ -10,7 +9,7 @@ import clientRouter from './routes/clientRoutes';
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json())
 app.use(cors());
 
 app.get('/ping', async (req, res) => {
@@ -19,14 +18,14 @@ app.get('/ping', async (req, res) => {
 
 app.use(loginRouter)
 
-app.use(verifyToken);
+// app.use(verifyToken);
 
-app.use(contractRouter)
-app.use(clientRouter)
-app.use(userRouter)
-app.use(budgetRouter)
+app.use('/api', contractRouter)
+app.use('/api', clientRouter)
+app.use('/api', userRouter)
+app.use('/api', budgetRouter)
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
