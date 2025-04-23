@@ -3,7 +3,7 @@ export type User = {
    username: string;
    password: string;
    fullName: string;
-   role: string;
+   role: 'admin' | 'vendor';
 }
 
 declare global {

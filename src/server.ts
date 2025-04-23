@@ -10,13 +10,17 @@ import clientRouter from './routes/clientRoutes';
 const app = express();
 
 app.use(express.json())
-app.use(cors());
+app.use(cors({
+    origin: process.env.URL_FRONT || 'http://localhost:3000', // frontend
+    credentials: true, // permite cookies!
+}));
+
 
 app.get('/ping', async (req, res) => {
     res.json("pong")
 })
 
-app.use(loginRouter)
+app.use('/api', loginRouter)
 
 // app.use(verifyToken);
 

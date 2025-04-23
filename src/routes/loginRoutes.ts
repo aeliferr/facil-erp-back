@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
 import { Router } from "express";
 import { PrismaClient } from '@prisma/client';
+import * as cookie from 'cookie'
 
 const prisma = new PrismaClient()
 const SECRET_KEY = 'secret_key'
@@ -21,8 +22,16 @@ loginRouter.post('/login', async (req, res) => {
             if (!user || !bcrypt.compareSync(password, user.password)) {
                 return res.status(401).send('Invalid credentials');
             }
-            const token = jwt.sign({ ...user }, SECRET_KEY, { expiresIn: '8h' });
-            return res.json({ token });
+            const token = jwt.sign({ id: user.id, username: user.fullName, role: user.role }, SECRET_KEY, { expiresIn: '8h' });
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                path: '/',
+                maxAge: 60 * 60 * 24 // 1 dia
+              })
+            res.json();
         } catch (error) {
             console.error(error);
             return res.status(500).send('Server error');

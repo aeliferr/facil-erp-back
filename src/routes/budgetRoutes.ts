@@ -5,6 +5,7 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { addMonths, format } from "date-fns";
 import brazzilianLocale from 'date-fns/locale/pt-BR';
 import numberInFull from "../util/numberInFull";
+import { auth } from "../middlewares/authorization";
 
 const prisma = new PrismaClient()
 
@@ -96,7 +97,7 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
     }
 })
 
-budgetRouter.get('/budgets', async (req, res) => {
+budgetRouter.get('/budgets', auth(['admin', 'vendor']), async (req, res) => {
     try {
         const { user } = req
 
