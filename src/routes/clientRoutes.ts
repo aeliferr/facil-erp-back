@@ -53,12 +53,27 @@ clientRouter.put('/clients/:id', async (req, res) => {
     try {
         const { id } = req.params
         const { name, type, phone, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
-
         const { user } = req
         
         await prisma.client.update({
             where: { id },
             data: { name, type, phone, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
+        })
+
+        res.status(200).send()
+    } catch (error) {
+        console.log(error)
+        res.status(400).json(error)
+    }
+})
+
+clientRouter.delete('/clients/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        const { user } = req
+        
+        await prisma.client.delete({
+            where: { id },
         })
 
         res.status(200).send()

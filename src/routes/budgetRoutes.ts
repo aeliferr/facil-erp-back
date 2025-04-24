@@ -3,17 +3,22 @@ import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { addMonths, format } from "date-fns";
+import brazzilianLocale from 'date-fns/locale/pt-BR';
+import numberInFull from "../util/numberInFull";
+import { auth } from "../middlewares/authorization";
+
 const prisma = new PrismaClient()
 
 const budgetRouter = Router()
 
 
-budgetRouter.post('/budget', async (req, res) => {
+budgetRouter.post('/budgets', async (req, res) => {
     try {
         const budgetData = req.body
         const { user } = req
 
-        const budget = { ...budgetData, vendorId: user!.id } 
+        //TODO: pegar id do vendedor a partir do usuario que vem na requisicao
+        const budget = { ...budgetData, vendorId: '668cfb63-b706-4ab8-8be0-40e2ed3bd38b' }
 
         await prisma.budget.create({
             data: {
@@ -30,7 +35,7 @@ budgetRouter.post('/budget', async (req, res) => {
                 },
                 vendor: {
                     connect: {
-                        id: user!.id
+                        id: budget.vendorId
                     }
                 }
             }
@@ -43,16 +48,23 @@ budgetRouter.post('/budget', async (req, res) => {
     }
 })
 
-budgetRouter.put('/budget/:id', async (req, res) => {
+budgetRouter.put('/budgets/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const { clientId, budgetItems } = req.body
+        const {
+            clientId,
+            daysAfterDefinitionAndMeasurement,
+            downPaymentPercentage,
+            installment,
+            paymentMethod,
+            workDays, budgetItems
+        } = req.body
 
         const { user } = req
 
         const budget = {
             clientId,
-            vendorId: user!.id,
+            vendorId: '668cfb63-b706-4ab8-8be0-40e2ed3bd38b',
             budgetItems
         }
 
@@ -62,6 +74,11 @@ budgetRouter.put('/budget/:id', async (req, res) => {
             },
             data: {
                 clientId: budget.clientId,
+                daysAfterDefinitionAndMeasurement,
+                downPaymentPercentage,
+                installment,
+                paymentMethod,
+                workDays,
                 budgetItems: {
                     deleteMany: {
                         budgetId: id
@@ -80,12 +97,11 @@ budgetRouter.put('/budget/:id', async (req, res) => {
     }
 })
 
-budgetRouter.get('/budgets', async (req, res) => {
+budgetRouter.get('/budgets', auth(['admin', 'vendor']), async (req, res) => {
     try {
         const { user } = req
 
         const result = await prisma.budget.findMany({
-            where: user!.role === 'vendor' ? { vendorId: user!.id } : {},
             include: {
                 budgetItems: true,
                 vendor: true,
@@ -122,7 +138,7 @@ budgetRouter.get('/budgets/:id', async (req, res) => {
     }
 });
 
-budgetRouter.get('/budget/:id/print', async (req, res) => {
+budgetRouter.get('/budgets/:id/print', async (req, res) => {
     try {
         const { id } = req.params
 
@@ -264,5 +280,217 @@ budgetRouter.get('/budget/:id/print', async (req, res) => {
         res.status(500).send('An error occurred while generating the PDF.');
     }
 });
+
+budgetRouter.get('/budgets/:id/contract/print', async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const budget = await prisma.budget.findUniqueOrThrow({
+            where: {
+                id
+            },
+            include: {
+                vendor: true,
+                budgetItems: true,
+                client: true
+            }
+        })
+
+        // Define font files
+        var fonts = {
+            Roboto: {
+                normal: `${__dirname}/../assets/fonts/Roboto/Roboto-Regular.ttf`,
+                bold: `${__dirname}/../assets/fonts/Roboto/Roboto-Medium.ttf`,
+                italics: `${__dirname}/../assets/fonts/Roboto/Roboto-Italic.ttf`,
+                bolditalics: `${__dirname}/../assets/fonts/Roboto/Roboto-MediumItalic.ttf`
+            }
+        };
+
+        var printer = new PdfPrinter(fonts);
+
+
+        let itemId = 0
+        let totalValue = 0
+
+        const budgetItemsDescription = budget.budgetItems.map((item) => {
+            itemId++
+            totalValue += item.unitValue * item.quantity
+            return `${itemId} - ${item.description}`
+        })
+
+        const clientIdentification =
+            budget.client.type === 'fisica'
+                ? `PORTADOR DO CPF: ${budget.client || '---'}, RG: ${budget.client.rg || '---'}`
+                : `INSCRITA NO CNPJ: ${budget.client.cnpj || '---'}`
+
+        // Filtra o endereço omitindo os campos nulos ou vazios
+        const endereco = [
+            budget.client.street,
+            budget.client.number,
+            budget.client.complement,
+            budget.client.zipcode,
+            budget.client.city,
+            budget.client.state,
+        ]
+            .filter(Boolean) // Remove null, undefined e strings vazias
+            .join(', ')
+
+        const downPaymentValue = (budget.downPaymentPercentage / 100) * totalValue
+        const remainingValue = totalValue - downPaymentValue
+
+        var dd: TDocumentDefinitions = {
+            pageMargins: [40, 30, 40, 20], // [left, top, right, bottom]
+            pageSize: 'A4',
+            content: [
+                {
+                    image: `${__dirname}/../assets/logo_artfaav_rgb.png`,
+                    width: 150,
+                    style: 'center',
+                    alignment: 'center'
+                },
+                {
+                    text: 'RUA PEDRO MARTINS Nº380 – MINI DIST. IND. ADAIL VETORAZZO\nSÃO JOSE DO RIO PRETO - SP\nFONE: 17 – 3513-0326',
+                    style: 'subheader'
+                },
+                {
+                    text: '\n\nCONTRATO PARTICULAR DE PRESTAÇÃO DE SERVIÇO\n\n',
+                    style: 'title'
+                },
+                {
+                    text: [
+                        { text: 'DE UM LADO A EMPRESA ' },
+                        { text: 'A L FERRARI MOVEIS', bold: true },
+                        ' SITUADA NO ENDEREÇO ACIMA CITADO, CNPJ 31.696.626/0001-08, DAQUI EM DIANTE SIMPLESMENTE CHAMADA DE ',
+                        { text: 'CONTRATADA', bold: true },
+                        ', E DO OUTRO LADO, ',
+                        { text: budget.client.name, bold: true },
+                        `, ${clientIdentification}, ESTABELECIDO NA ${endereco}. DAQUI POR DIANTE SIMPLESMENTE CHAMADO DE `,
+                        { text: 'CONTRATANTE', bold: true },
+                        ', TEM ENTRE SI JUSTO E CONTRATADO OS SERVIÇOS E MÓVEIS A SEREM EXECUTADOS, CONFORME DESCRIÇÃO A SEGUIR E PROJETOS APRESENTADOS.',
+                    ],
+                },
+                {
+                    text: '\n1a) CONFECÇÃO E MONTAGEM CONFORME DESCRITO ABAIXO:\n',
+                    style: 'section'
+                },
+                {
+                    ul: budgetItemsDescription
+                },
+                {
+                    text: '\n2a) VALORES E FORMA DE PAGAMENTO:',
+                    style: 'section'
+                },
+                {
+                    text: `O custo será de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}, conforme orçamento apresentado, com forma de pagamento por ${paymentMethodLabel(budget.paymentMethod)}, sendo:\n`
+                },
+                {
+                    text: '\nForma de pagamento:\n'
+                },
+                {
+                    ul: [
+                        `Entrada de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(downPaymentValue)} (${numberInFull(downPaymentValue)} reais), equivalente a ${budget.downPaymentPercentage}% do valor total.`,
+                        `O restante em ${budget.installment} parcela(s), totalizando ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(remainingValue)}.`
+                    ]
+                },
+                {
+                    text: '\n3a) MÓVEIS SERÃO FABRICADOS E ENTREGUES EM 60 DIAS APÓS DEFINIÇÃO DO PROJETO E MEDIÇÃO PARA EXECUÇÃO.',
+                    style: 'section'
+                },
+                {
+                    text: '\n4a) GARANTIA:',
+                    style: 'section'
+                },
+                {
+                    text: 'A CONTRATADA DARA AO CONTRATANTE, ALÉM DA GARANTIA DE 90 DIAS DE QUE TRATA O CÓDIGO DO CONSUMIDOR, UMA GARANTIA COMPLEMENTAR DE 1 ANO SOBRE A PARTE ESTRUTURAL DOS MÓVEIS.'
+                },
+                {
+                    text: `\nSÃO JOSÉ DO RIO PRETO, ${format(new Date(), 'PPPP', {
+                        locale: {
+                            formatLong: brazzilianLocale.ptBR.formatLong,
+                            localize: brazzilianLocale.ptBR.localize
+                        }
+                    })}\n\n`,
+                    style: 'date'
+                },
+                {
+                    columns: [
+                        {
+                            text: '___________________________________\nA L FERRARI MOVEIS',
+                            style: 'signature',
+                            alignment: 'center'
+                        },
+                        {
+                            text: `____________________________________\n${budget.client.name}`,
+                            style: 'signature',
+                            alignment: 'center'
+                        }
+                    ]
+                }
+            ],
+            styles: {
+                subheader: {
+                    fontSize: 10,
+                    alignment: 'center'
+                },
+                title: {
+                    fontSize: 12,
+                    bold: true,
+                    alignment: 'center'
+                },
+                section: {
+                    fontSize: 12,
+                    bold: true
+                },
+                date: {
+                    fontSize: 12,
+                    alignment: 'center'
+                },
+                signature: {
+                    fontSize: 12,
+                    margin: [0, 50, 0, 0]
+                }
+            },
+            defaultStyle: {
+                fontSize: 12
+            }
+        };
+
+        var options = {
+            // ...
+        }
+
+        var chunks: Uint8Array[] = [];
+
+        var pdfDoc = printer.createPdfKitDocument(dd, options);
+
+        pdfDoc.on('data', (chunk) => {
+            chunks.push(chunk)
+        })
+
+        pdfDoc.on('end', () => {
+            const result = Buffer.concat(chunks)
+            res.setHeader('Content-Disposition', 'filename="invoice.pdf"');
+            res.setHeader('Content-Type', 'application/pdf; name="MyFile.pdf"');
+            res.contentType('application/pdf; name="MyFile.pdf"')
+            res.send(result)
+        })
+
+        pdfDoc.end()
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while generating the PDF.');
+    }
+});
+
+function paymentMethodLabel(method: string) {
+    const labels: Record<string, string> = {
+        credit: 'cartão de crédito',
+        debit: 'cartão de débito',
+        boleto: 'boleto bancário',
+        pix: 'PIX',
+        money: 'dinheiro',
+    }
+    return labels[method] || method
+}
 
 export default budgetRouter
