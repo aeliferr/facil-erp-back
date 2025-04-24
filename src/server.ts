@@ -6,9 +6,11 @@ import userRouter from './routes/userRoutes';
 import loginRouter from './routes/loginRoutes';
 import budgetRouter from './routes/budgetRoutes';
 import clientRouter from './routes/clientRoutes';
+import cookieParser from 'cookie-parser'
 
 const app = express();
 
+app.use(cookieParser())
 app.use(express.json())
 app.use(cors({
     origin: process.env.URL_FRONT || 'http://localhost:3000', // frontend
@@ -22,7 +24,7 @@ app.get('/ping', async (req, res) => {
 
 app.use('/api', loginRouter)
 
-// app.use(verifyToken);
+app.use(verifyToken);
 
 app.use('/api', contractRouter)
 app.use('/api', clientRouter)

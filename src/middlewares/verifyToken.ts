@@ -1,28 +1,20 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "../types";
+import { Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+import { JwtPayload } from '../types'
 
-const SECRET_KEY = 'secret_key'
+export default function verifyToken(req: Request, res: Response, next: NextFunction): void {
+  const token = req.cookies.token
 
-function verifyToken(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'];
+  if (!token) {
+    res.status(401).json({ error: 'Token não encontrado' })
+    return
+  }
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1];
-
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
-            if (err) {
-                return res.status(403).json({ message: 'Invalid or expired token' });
-            }
-
-            req.user = decoded as User;  // Attach decoded user info to the request
-            return next();  // Proceed to next middleware or route
-        });
-
-        return
-    } else {
-        return res.status(401).json({ message: 'No token provided' });
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!)
+    req.user = decoded as JwtPayload
+    next()
+  } catch (err) {
+    res.status(401).json({ error: 'Token inválido ou expirado' })
+  }
 }
-
-export default verifyToken

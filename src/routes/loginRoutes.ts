@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import * as cookie from 'cookie'
 
 const prisma = new PrismaClient()
-const SECRET_KEY = 'secret_key'
+const SECRET_KEY = process.env.JWT_SECRET as string
 
 // Login endpoint
 

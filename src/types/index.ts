@@ -1,15 +1,14 @@
-export type User = {
-   id: string;
-   username: string;
-   password: string;
-   fullName: string;
-   role: 'admin' | 'vendor';
+export interface JwtPayload {
+  id: string
+  username: string
+  role: 'admin' | 'vendor'
+  // outros campos se necessário
 }
 
 declare global {
    namespace Express {
      interface Request {
-      user: User | null | undefined
+      user: JwtPayload | null | undefined
      }
    }
  }

@@ -97,7 +97,7 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
     }
 })
 
-budgetRouter.get('/budgets', auth(['admin', 'vendor']), async (req, res) => {
+budgetRouter.get('/budgets', auth('admin', 'vendor'), async (req, res) => {
     try {
         const { user } = req
 
