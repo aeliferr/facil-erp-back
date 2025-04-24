@@ -1,7 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
-const bcrypt = require('bcryptjs');
 const hashedPassword = bcrypt.hashSync('admin');
 console.log(hashedPassword);
 

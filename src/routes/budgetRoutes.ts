@@ -18,7 +18,7 @@ budgetRouter.post('/budgets', async (req, res) => {
         const { user } = req
 
         //TODO: pegar id do vendedor a partir do usuario que vem na requisicao
-        const budget = { ...budgetData, vendorId: '668cfb63-b706-4ab8-8be0-40e2ed3bd38b' }
+        const budget = { ...budgetData, vendorId: user?.id }
 
         await prisma.budget.create({
             data: {
@@ -97,11 +97,13 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
     }
 })
 
-budgetRouter.get('/budgets', auth('admin', 'vendor'), async (req, res) => {
+budgetRouter.get('/budgets', async (req, res) => {
     try {
         const { user } = req
 
+        const where = user?.role === 'vendor' ? { vendorId: user.id } : {}
         const result = await prisma.budget.findMany({
+            where,
             include: {
                 budgetItems: true,
                 vendor: true,
