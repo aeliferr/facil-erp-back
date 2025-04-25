@@ -6,7 +6,28 @@ const hashedPassword = bcrypt.hashSync('admin', 8);
 console.log(hashedPassword);
 
 async function main() {
-  await prisma.user.upsert({
+  const tenant = await prisma.tenant.upsert({
+    where: {
+      name: 'Admin',
+      document: '123456789'
+    },
+    create: {
+      name: 'Admin',
+      document: '123456789',
+      documentType: 'juridica',
+      // responsibleUser: {
+      //   create: {
+      //     username: 'admin',
+      //     password: hashedPassword,
+      //     fullName: "Administrador",
+      //     role: 'admin',
+      //   }
+      // }
+    },
+    update: {}
+  })
+
+  const user = await prisma.user.upsert({
     where: { username: 'admin' },
     update: {},
     create: {
@@ -14,8 +35,32 @@ async function main() {
       password: hashedPassword,
       fullName: "Administrador",
       role: 'admin',
+      tenant: {
+        connect: {
+          id: tenant.id
+        }
+      }
     },
   })
+
+
+
+  // await prisma.tenant.upsert({
+  //   where: {
+  //     name: 'Admin'
+  //   },
+  //   create: {
+  //     name: 'admin',
+  //     document: '123456789',
+  //     documentType: 'juridica',
+  //     responsibleUser: {
+  //       connect: {
+  //         id: user.id
+  //       }
+  //     }
+  //   },
+  //   update: {}
+  // })
 
   await prisma.user.upsert({
     where: { username: 'vendor' },
@@ -25,6 +70,7 @@ async function main() {
       password: hashedPassword,
       fullName: "Vendedor",
       role: 'vendor',
+      tenantId: tenant.id
     },
   })
 }

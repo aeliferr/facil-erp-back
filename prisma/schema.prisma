@@ -18,41 +18,60 @@ enum Role {
   vendor
 }
 
+model Tenant {
+  id                String     @id @default(uuid()) @db.Uuid
+  name              String     @db.VarChar(255)
+  document          String     @unique @db.VarChar(14)
+  documentType      PersonType
+  createdAt         DateTime   @default(now())
+
+  @@map("tenants")
+  Client Client[]
+  Budget Budget[]
+  Contract Contract[]
+  BudgetItem BudgetItem[]
+  User User[]
+}
+
 model User {
-  id String @id @db.Uuid @default(uuid())
+  id       String @id @default(uuid()) @db.Uuid
   username String @unique @db.VarChar(255)
   password String @db.VarChar(255)
   fullName String @db.VarChar(255)
-  role Role @default(vendor)
+  role     Role   @default(vendor)
 
   budgets Budget[]
-  
+  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String @db.Uuid
+
   @@map("users")
 }
 
-enum ClientType {
+enum PersonType {
   fisica
   juridica
 }
 
 model Client {
-  id String @id @db.Uuid @default(uuid())
-  name String @db.VarChar(255)
-  type ClientType
-  phone String? @db.VarChar(11)
-  rg String? @db.VarChar(9)
-  cpf String? @db.VarChar(11)
-  cnpj String? @db.VarChar(14)
-  zipcode String? @db.Char(8)
-  street String? @db.VarChar(255)
-  number String? @db.VarChar(50)
-  complement String? @db.VarChar(255)
-  neighborhood String? @db.VarChar(255)
-  city String? @db.VarChar(255)
-  state String? @db.VarChar(255)
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String     @db.VarChar(255)
+  type         PersonType
+  phone        String?    @db.VarChar(11)
+  rg           String?    @db.VarChar(9)
+  cpf          String?    @db.VarChar(11)
+  cnpj         String?    @db.VarChar(14)
+  zipcode      String?    @db.Char(8)
+  street       String?    @db.VarChar(255)
+  number       String?    @db.VarChar(50)
+  complement   String?    @db.VarChar(255)
+  neighborhood String?    @db.VarChar(255)
+  city         String?    @db.VarChar(255)
+  state        String?    @db.VarChar(255)
 
   budgets Budget[]
-  
+  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String @db.Uuid
+
   @@map("clients")
 }
 
@@ -63,21 +82,24 @@ enum BudgetStatus {
 }
 
 model Budget {
-  id String @id @db.Uuid @default(uuid())
-  status BudgetStatus @default(pending)
-  client Client @relation(fields: [clientId], references: [id])
-  clientId String @db.Uuid
-  vendor User @relation(fields: [vendorId], references: [id])
-  vendorId String @db.Uuid
-  paymentMethod PaymentMethod
-  installment Int @default(1)
-  downPaymentPercentage Int @default(0)
-  daysAfterDefinitionAndMeasurement Int @default(60)
-  workDays Boolean @default(false)
-  contract Contract? @relation(fields: [contractid], references: [id])
-  contractid String? @db.Uuid
+  id                                String        @id @default(uuid()) @db.Uuid
+  status                            BudgetStatus  @default(pending)
+  client                            Client        @relation(fields: [clientId], references: [id])
+  clientId                          String        @db.Uuid
+  vendor                            User          @relation(fields: [vendorId], references: [id])
+  vendorId                          String        @db.Uuid
+  paymentMethod                     PaymentMethod
+  installment                       Int           @default(1)
+  downPaymentPercentage             Int           @default(0)
+  daysAfterDefinitionAndMeasurement Int           @default(60)
+  workDays                          Boolean       @default(false)
+  contract                          Contract?     @relation(fields: [contractid], references: [id])
+  contractid                        String?       @db.Uuid
 
   budgetItems BudgetItem[]
+  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String @db.Uuid
+
   @@map("budgets")
 }
 
@@ -90,23 +112,28 @@ enum PaymentMethod {
 }
 
 model Contract {
-  id String @id @db.Uuid @default(uuid())
-  definitionDate DateTime? @db.Date
+  id              String    @id @default(uuid()) @db.Uuid
+  definitionDate  DateTime? @db.Date
   measurementDate DateTime? @db.Date
-  signature String @db.VarChar(250)
-  
+  signature       String    @db.VarChar(250)
+  Budget          Budget[]
+  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String @unique @db.Uuid
+
   @@map("contracts")
-  Budget Budget[]
 }
 
 model BudgetItem {
-  id String @id @db.Uuid @default(uuid())
+  id          String @id @default(uuid()) @db.Uuid
   description String
   unitValue   Float
   quantity    Int
-  
-  budget Budget @relation(fields: [budgetId], references: [id])
+
+  budget   Budget @relation(fields: [budgetId], references: [id])
   budgetId String @db.Uuid
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String @unique @db.Uuid
 
   @@map("budgetItems")
 }
