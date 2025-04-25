@@ -37,9 +37,29 @@ clientRouter.post('/clients', async (req, res) => {
         const { name, phone, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
 
         const { user } = req
+        console.log(user)
         
         await prisma.client.create({
-            data: { name, phone, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state }
+            data: { 
+                name, 
+                phone, 
+                type, 
+                rg, 
+                cpf, 
+                cnpj, 
+                zipcode, 
+                street, 
+                number, 
+                complement, 
+                neighborhood,
+                city, 
+                state, 
+                tenant: {
+                    connect: {
+                        id: user?.tenantId
+                    }
+                } 
+            }
         })
 
         res.status(200).send()

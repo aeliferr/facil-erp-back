@@ -22,7 +22,7 @@ loginRouter.post('/login', async (req, res) => {
             if (!user || !bcrypt.compareSync(password, user.password)) {
                 return res.status(401).send('Invalid credentials');
             }
-            const token = jwt.sign({ id: user.id, username: user.fullName, role: user.role }, SECRET_KEY, { expiresIn: '8h' });
+            const token = jwt.sign({ id: user.id, username: user.fullName, role: user.role, tenantId: user.tenantId }, SECRET_KEY, { expiresIn: '8h' });
 
             res.cookie('token', token, {
                 httpOnly: true,
