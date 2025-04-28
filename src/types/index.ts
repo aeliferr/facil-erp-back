@@ -9,7 +9,7 @@ export interface JwtPayload {
 declare global {
    namespace Express {
      interface Request {
-      user: JwtPayload | null | undefined
+      user: JwtPayload
      }
    }
  }

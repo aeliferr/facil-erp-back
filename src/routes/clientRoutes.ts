@@ -1,7 +1,8 @@
-import { PrismaClient } from "@prisma/client"
+import { Prisma } from '@prisma/client'
+import prisma from '../lib/prisma'
 import { Router } from "express"
 
-const prisma = new PrismaClient()
+
 
 const clientRouter = Router()
 
@@ -35,9 +36,6 @@ clientRouter.get('/clients/:id', async (req, res) => {
 clientRouter.post('/clients', async (req, res) => {
     try {
         const { name, phone, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
-
-        const { user } = req
-        console.log(user)
         
         await prisma.client.create({
             data: { 
@@ -53,13 +51,8 @@ clientRouter.post('/clients', async (req, res) => {
                 complement, 
                 neighborhood,
                 city, 
-                state, 
-                tenant: {
-                    connect: {
-                        id: user?.tenantId
-                    }
-                } 
-            }
+                state
+            } as Prisma.ClientUncheckedCreateInput
         })
 
         res.status(200).send()
@@ -73,7 +66,6 @@ clientRouter.put('/clients/:id', async (req, res) => {
     try {
         const { id } = req.params
         const { name, type, phone, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
-        const { user } = req
         
         await prisma.client.update({
             where: { id },
@@ -90,7 +82,6 @@ clientRouter.put('/clients/:id', async (req, res) => {
 clientRouter.delete('/clients/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const { user } = req
         
         await prisma.client.delete({
             where: { id },

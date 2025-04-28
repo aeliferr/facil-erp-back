@@ -17,11 +17,6 @@ app.use(cors({
     credentials: true, // permite cookies!
 }));
 
-
-app.get('/ping', async (req, res) => {
-    res.json("pong")
-})
-
 app.use('/api', loginRouter)
 
 app.use(verifyToken);

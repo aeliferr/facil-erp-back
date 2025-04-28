@@ -1,13 +1,11 @@
 import PdfPrinter from "pdfmake";
-import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { addMonths, format } from "date-fns";
 import brazzilianLocale from 'date-fns/locale/pt-BR';
 import numberInFull from "../util/numberInFull";
-import { auth } from "../middlewares/authorization";
-
-const prisma = new PrismaClient()
+import prisma from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 
 const budgetRouter = Router()
 
@@ -17,28 +15,26 @@ budgetRouter.post('/budgets', async (req, res) => {
         const budgetData = req.body
         const { user } = req
 
-        //TODO: pegar id do vendedor a partir do usuario que vem na requisicao
         const budget = { ...budgetData, vendorId: user?.id }
 
         await prisma.budget.create({
             data: {
-                ...budget,
-                clientId: undefined,
-                vendorId: undefined,
+                paymentMethod: budget.paymentMethod,
+                daysAfterDefinitionAndMeasurement: budget.daysAfterDefinitionAndMeasurement,
+                downPaymentPercentage: budget.downPaymentPercentage,
+                installment: budget.installment,
+                status: "pending",
+                workDays: budget.workDays,
+                vendor: {
+                    connect: { id: budget.vendorId }
+                },
+                client: {
+                    connect: { id: budget.clientId }
+                },
                 budgetItems: {
                     create: budget.budgetItems
                 },
-                client: {
-                    connect: {
-                        id: budget.clientId,
-                    }
-                },
-                vendor: {
-                    connect: {
-                        id: budget.vendorId
-                    }
-                }
-            }
+            } as unknown as Prisma.BudgetUncheckedCreateInput
         })
 
         res.status(200).send()
@@ -57,10 +53,9 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
             downPaymentPercentage,
             installment,
             paymentMethod,
-            workDays, budgetItems
+            workDays,
+            budgetItems
         } = req.body
-
-        const { user } = req
 
         const budget = {
             clientId,
@@ -323,7 +318,7 @@ budgetRouter.get('/budgets/:id/contract/print', async (req, res) => {
         const clientIdentification =
             budget.client.type === 'fisica'
                 ? `PORTADOR DO CPF: ${budget.client || '---'}, RG: ${budget.client.rg || '---'}`
-                : `INSCRITA NO CNPJ: ${budget.client.cnpj || '---'}`
+                : `INSCRITO NO CNPJ: ${budget.client.cnpj || '---'}`
 
         // Filtra o endereço omitindo os campos nulos ou vazios
         const endereco = [

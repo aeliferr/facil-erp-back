@@ -29,7 +29,6 @@ loginRouter.post('/login', async (req, res) => {
                 secure: false,
                 sameSite: 'lax',
                 path: '/',
-                maxAge: 60 * 60 * 24 // 1 dia
               })
             res.json();
         } catch (error) {

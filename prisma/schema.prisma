@@ -133,7 +133,7 @@ model BudgetItem {
   budgetId String @db.Uuid
 
   tenant  Tenant @relation(fields: [tenantId], references: [id])
-  tenantId String @unique @db.Uuid
+  tenantId String @db.Uuid
 
   @@map("budgetItems")
 }

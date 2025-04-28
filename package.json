@@ -34,6 +34,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pdfmake": "^0.2.18",
+    "prisma": "^6.6.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
   }
