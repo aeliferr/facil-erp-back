@@ -1,8 +1,9 @@
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client';
+import { hashSync } from 'bcrypt';
+
 const prisma = new PrismaClient()
 
-const bcrypt = require('bcrypt');
-const hashedPassword = bcrypt.hashSync('admin', 8);
+const hashedPassword = hashSync('admin', 8);
 console.log(hashedPassword);
 
 async function main() {
@@ -15,23 +16,15 @@ async function main() {
       name: 'Admin',
       document: '123456789',
       documentType: 'juridica',
-      // responsibleUser: {
-      //   create: {
-      //     username: 'admin',
-      //     password: hashedPassword,
-      //     fullName: "Administrador",
-      //     role: 'admin',
-      //   }
-      // }
     },
     update: {}
   })
 
   const user = await prisma.user.upsert({
-    where: { username: 'admin' },
+    where: { email: 'admin@teste.com' },
     update: {},
     create: {
-      username: 'admin',
+      email: 'admin@teste.com',
       password: hashedPassword,
       fullName: "Administrador",
       role: 'admin',
@@ -43,30 +36,11 @@ async function main() {
     },
   })
 
-
-
-  // await prisma.tenant.upsert({
-  //   where: {
-  //     name: 'Admin'
-  //   },
-  //   create: {
-  //     name: 'admin',
-  //     document: '123456789',
-  //     documentType: 'juridica',
-  //     responsibleUser: {
-  //       connect: {
-  //         id: user.id
-  //       }
-  //     }
-  //   },
-  //   update: {}
-  // })
-
   await prisma.user.upsert({
-    where: { username: 'vendor' },
+    where: { email: 'vendor@teste.com' },
     update: {},
     create: {
-      username: 'vendor',
+      email: 'vendor@teste.com',
       password: hashedPassword,
       fullName: "Vendedor",
       role: 'vendor',

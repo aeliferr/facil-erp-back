@@ -6,9 +6,11 @@ import brazzilianLocale from 'date-fns/locale/pt-BR';
 import numberInFull from "../util/numberInFull";
 import prisma from "../lib/prisma";
 import { Prisma } from "@prisma/client";
+import verifyToken from "../middlewares/verifyToken";
 
 const budgetRouter = Router()
 
+budgetRouter.use(verifyToken);
 
 budgetRouter.post('/budgets', async (req, res) => {
     try {
@@ -57,18 +59,23 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
             budgetItems
         } = req.body
 
-        const budget = {
-            clientId,
-            vendorId: '668cfb63-b706-4ab8-8be0-40e2ed3bd38b',
-            budgetItems
-        }
+        const user = req.user
 
         await prisma.budget.update({
             where: {
                 id
             },
             data: {
-                clientId: budget.clientId,
+                client: {
+                    connect: {
+                        id: clientId
+                    }
+                },
+                vendor: {
+                    connect: {
+                        id: user.id
+                    }
+                },
                 daysAfterDefinitionAndMeasurement,
                 downPaymentPercentage,
                 installment,
@@ -78,9 +85,7 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
                     deleteMany: {
                         budgetId: id
                     },
-                    createMany: {
-                        data: budget.budgetItems
-                    },
+                    create: budgetItems,
                 },
             }
         })

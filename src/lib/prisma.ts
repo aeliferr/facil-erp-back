@@ -6,8 +6,10 @@ function injectTenantId(data: any, tenantId: string) {
 
   // Se o próprio data não tem tenantId, adiciona
   if (typeof data === 'object' && !Array.isArray(data)) {
-    if ('tenantId' in data || 'tenant' in data) {
-      data.tenantId = tenantId;
+    data.tenant = {
+      connect: {
+        id: tenantId
+      }
     }
   }
 

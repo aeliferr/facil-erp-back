@@ -19,30 +19,39 @@ enum Role {
 }
 
 model Tenant {
-  id                String     @id @default(uuid()) @db.Uuid
-  name              String     @db.VarChar(255)
-  document          String     @unique @db.VarChar(14)
-  documentType      PersonType
-  createdAt         DateTime   @default(now())
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String       @db.VarChar(255)
+  document     String       @unique @db.VarChar(14)
+  documentType PersonType
+  createdAt    DateTime     @default(now())
+  Client       Client[]
+  Budget       Budget[]
+  Contract     Contract[]
+  BudgetItem   BudgetItem[]
+  User         User[]
 
   @@map("tenants")
-  Client Client[]
-  Budget Budget[]
-  Contract Contract[]
-  BudgetItem BudgetItem[]
-  User User[]
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String   @db.VarChar(255)
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model User {
   id       String @id @default(uuid()) @db.Uuid
-  username String @unique @db.VarChar(255)
+  email    String @unique @db.VarChar(255)
   password String @db.VarChar(255)
   fullName String @db.VarChar(255)
-  role     Role   @default(vendor)
+  role     Role   @default(admin)
 
-  budgets Budget[]
-  tenant  Tenant @relation(fields: [tenantId], references: [id])
-  tenantId String @db.Uuid
+  budgets  Budget[]
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId String   @db.Uuid
 
   @@map("users")
 }
@@ -68,9 +77,9 @@ model Client {
   city         String?    @db.VarChar(255)
   state        String?    @db.VarChar(255)
 
-  budgets Budget[]
-  tenant  Tenant @relation(fields: [tenantId], references: [id])
-  tenantId String @db.Uuid
+  budgets  Budget[]
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId String   @db.Uuid
 
   @@map("clients")
 }
@@ -97,8 +106,8 @@ model Budget {
   contractid                        String?       @db.Uuid
 
   budgetItems BudgetItem[]
-  tenant  Tenant @relation(fields: [tenantId], references: [id])
-  tenantId String @db.Uuid
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  tenantId    String       @db.Uuid
 
   @@map("budgets")
 }
@@ -117,8 +126,8 @@ model Contract {
   measurementDate DateTime? @db.Date
   signature       String    @db.VarChar(250)
   Budget          Budget[]
-  tenant  Tenant @relation(fields: [tenantId], references: [id])
-  tenantId String @unique @db.Uuid
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId        String    @unique @db.Uuid
 
   @@map("contracts")
 }
@@ -132,7 +141,7 @@ model BudgetItem {
   budget   Budget @relation(fields: [budgetId], references: [id])
   budgetId String @db.Uuid
 
-  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
   tenantId String @db.Uuid
 
   @@map("budgetItems")

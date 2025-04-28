@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import { Router } from "express";
 import { PrismaClient } from '@prisma/client';
 import * as cookie from 'cookie'
+import { setTenantContext } from '../context/tenant-context';
 
 const prisma = new PrismaClient()
 const SECRET_KEY = process.env.JWT_SECRET as string
@@ -12,18 +13,18 @@ const SECRET_KEY = process.env.JWT_SECRET as string
 const loginRouter = Router()
 
 loginRouter.post('/login', async (req, res) => {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
         try {
             const user = await prisma.user.findUnique({
                 where: {
-                    username,
+                    email,
                 }
             });
             if (!user || !bcrypt.compareSync(password, user.password)) {
                 return res.status(401).send('Invalid credentials');
             }
             const token = jwt.sign({ id: user.id, username: user.fullName, role: user.role, tenantId: user.tenantId }, SECRET_KEY, { expiresIn: '8h' });
-
+            setTenantContext(user.tenantId)
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: false,

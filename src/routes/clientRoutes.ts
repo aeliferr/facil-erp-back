@@ -1,10 +1,11 @@
 import { Prisma } from '@prisma/client'
 import prisma from '../lib/prisma'
 import { Router } from "express"
-
-
+import verifyToken from '../middlewares/verifyToken';
 
 const clientRouter = Router()
+
+clientRouter.use(verifyToken);
 
 clientRouter.get('/clients', async (req, res) => {
     try {

@@ -5,10 +5,13 @@ import PdfPrinter from 'pdfmake';
 import numberInFull from '../util/numberInFull';
 import { format } from 'date-fns';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import verifyToken from '../middlewares/verifyToken';
 
 const prisma = new PrismaClient()
 
 const contractRouter = Router()
+
+contractRouter.use(verifyToken);
 
 contractRouter.get('/contract/from-budget/:budgetId/print', async (req, res) => {
     try {
