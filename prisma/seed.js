@@ -15,7 +15,7 @@ async function main() {
     create: {
       name: 'Admin',
       document: '123456789',
-      documentType: 'juridica',
+      personType: 'juridica',
     },
     update: {}
   })

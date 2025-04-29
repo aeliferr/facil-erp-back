@@ -7,7 +7,7 @@ const clientRouter = Router()
 
 clientRouter.use(verifyToken);
 
-clientRouter.get('/clients', async (req, res) => {
+clientRouter.get('/', async (req, res) => {
     try {
         const result = await prisma.client.findMany()
 
@@ -18,7 +18,7 @@ clientRouter.get('/clients', async (req, res) => {
     }
 })
 
-clientRouter.get('/clients/:id', async (req, res) => {
+clientRouter.get('/:id', async (req, res) => {
     try {
         const { id } = req.params
         const result = await prisma.client.findUnique({
@@ -34,7 +34,7 @@ clientRouter.get('/clients/:id', async (req, res) => {
     }
 })
 
-clientRouter.post('/clients', async (req, res) => {
+clientRouter.post('/', async (req, res) => {
     try {
         const { name, phone, type, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
         
@@ -63,7 +63,7 @@ clientRouter.post('/clients', async (req, res) => {
     }
 })
 
-clientRouter.put('/clients/:id', async (req, res) => {
+clientRouter.put('/:id', async (req, res) => {
     try {
         const { id } = req.params
         const { name, type, phone, rg, cpf, cnpj, zipcode, street, number, complement, neighborhood, city, state } = req.body
@@ -80,7 +80,7 @@ clientRouter.put('/clients/:id', async (req, res) => {
     }
 })
 
-clientRouter.delete('/clients/:id', async (req, res) => {
+clientRouter.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params
         

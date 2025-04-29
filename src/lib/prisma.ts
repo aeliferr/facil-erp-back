@@ -71,15 +71,27 @@ function injectTenantId(data: any, tenantId: string) {
   return data;
 }
 
+const ignoredModels = ["Tenant", "PasswordReset"]
+
 const prisma = new PrismaClient().$extends({
   query: {
     $allModels: {
-      async $allOperations({ args, query }) {
+      async $allOperations({ model, operation, args, query }) {
+        if (ignoredModels.includes(model)) return query(args)
+
         const tenantId = getTenantContext()?.tenantId; // aqui você pega o tenantId da requisição
 
         // Apenas se tiver data
         if (args?.data) {
           args.data = injectTenantId(args.data, tenantId);
+        }
+
+        // Operações de leitura (findMany, findUnique, findFirst, etc.)
+        if (['findMany', 'findFirst', 'findUnique'].includes(operation)) {
+          args.where = {
+            ...(args.where || {}),
+            tenantId: tenantId
+          };
         }
 
         return query(args);

@@ -12,7 +12,7 @@ const budgetRouter = Router()
 
 budgetRouter.use(verifyToken);
 
-budgetRouter.post('/budgets', async (req, res) => {
+budgetRouter.post('/', async (req, res) => {
     try {
         const budgetData = req.body
         const { user } = req
@@ -46,7 +46,7 @@ budgetRouter.post('/budgets', async (req, res) => {
     }
 })
 
-budgetRouter.put('/budgets/:id', async (req, res) => {
+budgetRouter.put('/:id', async (req, res) => {
     try {
         const { id } = req.params
         const {
@@ -97,7 +97,7 @@ budgetRouter.put('/budgets/:id', async (req, res) => {
     }
 })
 
-budgetRouter.get('/budgets', async (req, res) => {
+budgetRouter.get('/', async (req, res) => {
     try {
         const { user } = req
 
@@ -118,7 +118,7 @@ budgetRouter.get('/budgets', async (req, res) => {
     }
 });
 
-budgetRouter.get('/budgets/:id', async (req, res) => {
+budgetRouter.get('/:id', async (req, res) => {
     try {
         const { id } = req.params
 
@@ -140,7 +140,7 @@ budgetRouter.get('/budgets/:id', async (req, res) => {
     }
 });
 
-budgetRouter.get('/budgets/:id/print', async (req, res) => {
+budgetRouter.get('/:id/print', async (req, res) => {
     try {
         const { id } = req.params
 
@@ -283,7 +283,7 @@ budgetRouter.get('/budgets/:id/print', async (req, res) => {
     }
 });
 
-budgetRouter.get('/budgets/:id/contract/print', async (req, res) => {
+budgetRouter.get('/:id/contract/print', async (req, res) => {
     try {
         const { id } = req.params
 

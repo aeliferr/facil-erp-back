@@ -12,7 +12,7 @@ const SECRET_KEY = process.env.JWT_SECRET as string
 
 const loginRouter = Router()
 
-loginRouter.post('/login', async (req, res) => {
+loginRouter.post('/', async (req, res) => {
         const { email, password } = req.body;
         try {
             const user = await prisma.user.findUnique({

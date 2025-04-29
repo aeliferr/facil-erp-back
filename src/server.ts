@@ -6,6 +6,7 @@ import loginRouter from './routes/loginRoutes';
 import budgetRouter from './routes/budgetRoutes';
 import clientRouter from './routes/clientRoutes';
 import cookieParser from 'cookie-parser'
+import tenantRoutes from './routes/tenantRoutes';
 
 const app = express();
 
@@ -16,11 +17,12 @@ app.use(cors({
     credentials: true, // permite cookies!
 }));
 
-app.use('/api', userRouter)
-app.use('/api', loginRouter)
-app.use('/api', contractRouter)
-app.use('/api', clientRouter)
-app.use('/api', budgetRouter)
+app.use('/api/users', userRouter)
+app.use('/api/tenants', tenantRoutes)
+app.use('/api/login', loginRouter)
+app.use('/api/contracts', contractRouter)
+app.use('/api/clients', clientRouter)
+app.use('/api/budgets', budgetRouter)
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

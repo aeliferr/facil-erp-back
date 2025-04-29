@@ -13,7 +13,7 @@ const contractRouter = Router()
 
 contractRouter.use(verifyToken);
 
-contractRouter.get('/contract/from-budget/:budgetId/print', async (req, res) => {
+contractRouter.get('/from-budget/:budgetId/print', async (req, res) => {
     try {
         const { budgetId } = req.params
 

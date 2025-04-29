@@ -9,7 +9,7 @@ const prisma = new PrismaClient()
 
 const userRouter = Router()
 
-userRouter.post("/users/forgot-password", async (req, res) => {
+userRouter.post("/forgot-password", async (req, res) => {
     const { email } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
@@ -34,12 +34,12 @@ userRouter.post("/users/forgot-password", async (req, res) => {
     return res.json({ message: "E-mail de recuperação enviado" });
 });
 
-userRouter.post("/users/reset-password", async (req, res) => {
+userRouter.post("/reset-password", async (req, res) => {
     const { token, password } = req.body;
 
     const reset = await prisma.passwordReset.findUnique({ where: { token } });
 
-    if (!reset || reset.used || reset.expiresAt < new Date()) {
+    if (!reset || reset.used || (reset.expiresAt && reset.expiresAt < new Date())) {
         return res.status(400).json({ message: "Token inválido ou expirado" });
     }
 
@@ -61,7 +61,7 @@ userRouter.post("/users/reset-password", async (req, res) => {
 
 userRouter.use(verifyToken)
 
-userRouter.get('/users/me', async (req, res) => {
+userRouter.get('/me', async (req, res) => {
     try {
         const { user } = req
         const result = await prisma.user.findUnique({
