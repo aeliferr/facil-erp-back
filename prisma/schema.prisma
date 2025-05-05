@@ -24,6 +24,7 @@ model Tenant {
   document   String       @unique @db.VarChar(14)
   personType PersonType
   createdAt  DateTime     @default(now())
+  logo       String
   Client     Client[]
   Budget     Budget[]
   Contract   Contract[]

@@ -11,7 +11,7 @@ import tenantRoutes from './routes/tenantRoutes';
 const app = express();
 
 app.use(cookieParser())
-app.use(express.json())
+app.use(express.json({ limit: '10mb'}))
 app.use(cors({
     origin: process.env.URL_FRONT || 'http://localhost:3000', // frontend
     credentials: true, // permite cookies!

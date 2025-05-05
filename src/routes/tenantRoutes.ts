@@ -3,6 +3,12 @@ import prisma from "../lib/prisma";
 import generateToken from "../util/generateToken";
 import { hashToken } from "../util/hashToken";
 import { sendWelcomeMail } from "../lib/mailjet";
+import Stripe from 'stripe';
+import multer from 'multer'
+
+const stripeClient = new Stripe(process.env.STRIPE_PRIVATE_KEY as string)
+
+const upload = multer()
 
 const tenantRouter = Router()
 
@@ -12,7 +18,7 @@ tenantRouter.get('/', async (req, res) => {
 
 tenantRouter.post('/signup', async (req, res) => {
     try {
-        const { personType, name, document, email, username } = req.body
+        const { personType, name, document, email, username, logo, paymentPeriod, paymentMethodId } = req.body
 
         const existingTenant = await prisma.tenant.findUnique({
             where: {
@@ -21,7 +27,7 @@ tenantRouter.post('/signup', async (req, res) => {
         })
 
         if (existingTenant) {
-            return res.status(400).json({ error: 'Email já está em uso' })    
+            return res.status(400).json({ error: 'Email já está em uso' })
         }
 
         const existingEmail = await prisma.user.findFirst({
@@ -41,6 +47,7 @@ tenantRouter.post('/signup', async (req, res) => {
                 personType,
                 document,
                 name,
+                logo,
                 User: {
                     create: {
                         email,
@@ -62,7 +69,26 @@ tenantRouter.post('/signup', async (req, res) => {
 
         sendWelcomeMail(email, token)
 
-        return res.status(201).json({ message: 'Conta criada com sucesso' })
+        const customer = await stripeClient.customers.create({
+            name,
+            email,
+            invoice_settings: {
+                default_payment_method: 'pmc_1RJlwHQl3QYVoWPZ6sHFGpkJ'
+            }
+        })
+        
+        const subscription = await stripeClient.subscriptions.create({
+            customer: customer.id,
+            items: [
+                {
+                    price: paymentPeriod === 'monthly' ? 'price_1RKRtNQl3QYVoWPZhLU9QzVI' : 'price_1RKTAcQl3QYVoWPZGoTNXSNc',
+                },
+            ],
+            expand: ['latest_invoice.payment_intent'],
+            payment_behavior: 'default_incomplete',
+        });
+
+        return res.status(201).json({ message: 'Conta criada com sucesso', subscription })
     } catch (err: any) {
         console.error(err)
         return res.status(400).json({ error: err.message || 'Erro na criação da conta' })
