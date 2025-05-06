@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  // output   = "app/generated/prisma/client"
 }
 
 datasource db {
@@ -19,28 +20,29 @@ enum Role {
 }
 
 model Tenant {
-  id         String       @id @default(uuid()) @db.Uuid
-  name       String       @db.VarChar(255)
-  document   String       @unique @db.VarChar(14)
-  personType PersonType
-  createdAt  DateTime     @default(now())
-  logo       String
-  Client     Client[]
-  Budget     Budget[]
-  Contract   Contract[]
-  BudgetItem BudgetItem[]
-  User       User[]
+  id               String       @id @default(uuid()) @db.Uuid
+  name             String       @db.VarChar(255)
+  document         String       @unique @db.VarChar(14)
+  personType       PersonType
+  createdAt        DateTime     @default(now())
+  logo             String
+  stripeCustomerId String?      @db.VarChar(255)
+  Client           Client[]
+  Budget           Budget[]
+  Contract         Contract[]
+  BudgetItem       BudgetItem[]
+  User             User[]
 
   @@map("tenants")
 }
 
 model PasswordReset {
-  id        String   @id @default(uuid())
-  email     String   @db.VarChar(255)
-  token     String   @unique
+  id        String    @id @default(uuid())
+  email     String    @db.VarChar(255)
+  token     String    @unique
   expiresAt DateTime?
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  used      Boolean   @default(false)
+  createdAt DateTime  @default(now())
 }
 
 model User {

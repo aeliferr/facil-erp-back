@@ -4,38 +4,53 @@ import generateToken from "../util/generateToken";
 import { hashToken } from "../util/hashToken";
 import { sendWelcomeMail } from "../lib/mailjet";
 import Stripe from 'stripe';
-import multer from 'multer'
 
-const stripeClient = new Stripe(process.env.STRIPE_PRIVATE_KEY as string)
+const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY as string)
 
-const upload = multer()
 
 const tenantRouter = Router()
 
-tenantRouter.get('/', async (req, res) => {
-    res.json('pong')
+tenantRouter.post('/create-setup-intent', async (req, res) => {
+    try {
+        const { name, email } = req.body
+
+        const customer = await stripe.customers.create({
+            name,
+            email
+        })
+
+        const setupIntent = await stripe.setupIntents.create({
+            customer: customer.id
+        })
+
+        res.status(201).json({ clientSecret: setupIntent.client_secret, customerId: customer.id })
+    } catch (error) {
+        res.status(500).json(error)
+    }
 })
 
-tenantRouter.post('/signup', async (req, res) => {
+tenantRouter.post('/sign-up', async (req, res) => {
     try {
-        const { personType, name, document, email, username, logo, paymentPeriod, paymentMethodId } = req.body
+        const { company, user, customerId, paymentMethodId } = req.body
 
         const existingTenant = await prisma.tenant.findUnique({
             where: {
-                document
+                document: company.document
             }
         })
 
         if (existingTenant) {
-            return res.status(400).json({ error: 'Email já está em uso' })
+            res.status(400).json({ error: 'Email já está em uso' })
+            return
         }
 
         const existingEmail = await prisma.user.findFirst({
-            where: { email }
+            where: { email: user.email }
         })
 
         if (existingEmail) {
-            return res.status(400).json({ error: 'Email já está em uso.' })
+            res.status(400).json({ error: 'Email já está em uso.' })
+            return
         }
 
         // Gerar senha temporária ou pedir criação via fluxo separado
@@ -44,14 +59,15 @@ tenantRouter.post('/signup', async (req, res) => {
 
         await prisma.tenant.create({
             data: {
-                personType,
-                document,
-                name,
-                logo,
+                personType: company.personType,
+                document: company.document,
+                name: company.name,
+                stripeCustomerId: customerId,
+                logo: company.logo,
                 User: {
                     create: {
-                        email,
-                        fullName: username,
+                        email: user.email,
+                        fullName: user.username,
                         password: hashedPassword
                     }
                 }
@@ -62,36 +78,36 @@ tenantRouter.post('/signup', async (req, res) => {
 
         await prisma.passwordReset.create({
             data: {
-                email,
+                email: user.email,
                 token
             }
         })
 
-        sendWelcomeMail(email, token)
+        sendWelcomeMail(user.email, token)
 
-        const customer = await stripeClient.customers.create({
-            name,
-            email,
+        await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
+
+        // Define o cartão como padrão
+        await stripe.customers.update(customerId, {
             invoice_settings: {
-                default_payment_method: 'pmc_1RJlwHQl3QYVoWPZ6sHFGpkJ'
-            }
+                default_payment_method: paymentMethodId,
+            },
         })
-        
-        const subscription = await stripeClient.subscriptions.create({
-            customer: customer.id,
+
+        // Cria a assinatura
+        await stripe.subscriptions.create({
+            customer: customerId,
             items: [
                 {
-                    price: paymentPeriod === 'monthly' ? 'price_1RKRtNQl3QYVoWPZhLU9QzVI' : 'price_1RKTAcQl3QYVoWPZGoTNXSNc',
+                    price: 'monthly' === 'monthly' ? 'price_1RKRtNQl3QYVoWPZhLU9QzVI' : 'price_1RKTAcQl3QYVoWPZGoTNXSNc',
                 },
-            ],
-            expand: ['latest_invoice.payment_intent'],
-            payment_behavior: 'default_incomplete',
-        });
+            ]
+        })
 
-        return res.status(201).json({ message: 'Conta criada com sucesso', subscription })
+        res.status(201).json({ message: 'Conta criada com sucesso' })
     } catch (err: any) {
         console.error(err)
-        return res.status(400).json({ error: err.message || 'Erro na criação da conta' })
+        res.status(400).json({ error: err.message || 'Erro na criação da conta' })
     }
 })
 
