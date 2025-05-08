@@ -37,12 +37,15 @@
     "node-mailjet": "^6.0.8",
     "pdfmake": "^0.2.18",
     "prisma": "^6.7.0",
+    "prisma-zod-generator": "^0.8.13",
     "stripe": "^18.1.0",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/multer": "^1.4.12",
-    "tsx": "^4.19.3"
+    "tsx": "^4.19.3",
+    "zod-prisma": "^0.5.4"
   }
 }

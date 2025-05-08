@@ -21,20 +21,26 @@ loginRouter.post('/', async (req, res) => {
                 }
             });
             if (!user || !bcrypt.compareSync(password, user.password)) {
-                return res.status(401).send('Invalid credentials');
+                res.status(401).send('Invalid credentials')
+                return
             }
-            const token = jwt.sign({ id: user.id, username: user.fullName, role: user.role, tenantId: user.tenantId }, SECRET_KEY, { expiresIn: '8h' });
+            
             setTenantContext(user.tenantId)
+            
+            const token = jwt.sign({ id: user.id, username: user.fullName, role: user.role, tenantId: user.tenantId }, SECRET_KEY, { expiresIn: '8h' });
+            
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false,
+                secure: process.env.ENVIRONMENT === 'prod',
                 sameSite: 'lax',
                 path: '/',
               })
+
             res.json();
         } catch (error) {
             console.error(error);
-            return res.status(500).send('Server error');
+            res.status(500).send('Server error');
+            return
         }
     })
 
