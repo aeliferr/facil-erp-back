@@ -4,6 +4,7 @@ import generateToken from "../util/generateToken";
 import { hashToken } from "../util/hashToken";
 import { sendWelcomeMail } from "../lib/mailjet";
 import Stripe from 'stripe';
+import verifyToken from "../middlewares/verifyToken";
 
 const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY as string)
 
@@ -109,6 +110,48 @@ tenantRouter.post('/sign-up', async (req, res) => {
         console.error(err)
         res.status(400).json({ error: err.message || 'Erro na criação da conta' })
     }
+})
+
+tenantRouter.use(verifyToken);
+
+tenantRouter.get('/', async (req, res) => {
+    try {
+        const { user } = req
+
+        const data = await prisma.tenant.findUniqueOrThrow({
+            where: {
+                id: user.tenantId
+            }
+        })
+
+        res.json(data)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send()
+    }
+
+})
+
+tenantRouter.put('/', async (req, res) => {
+    try {
+        const { user } = req
+        const { logo } = req.body
+
+        await prisma.tenant.update({
+            where: {
+                id: user.tenantId
+            },
+            data: {
+                logo
+            }
+        })
+
+        res.json()
+    } catch (error) {
+        console.log(error)
+        res.status(500).send()
+    }
+
 })
 
 export default tenantRouter

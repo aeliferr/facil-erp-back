@@ -151,9 +151,19 @@ budgetRouter.get('/:id/print', async (req, res) => {
             include: {
                 vendor: true,
                 budgetItems: true,
-                client: true
+                client: true,
+                tenant: {
+                    select: {
+                        logo: true
+                    }
+                }
             }
         })
+
+        if (!budget) {
+            res.status(204).send()
+            return
+        }
 
         // Define font files
         var fonts = {
@@ -171,7 +181,7 @@ budgetRouter.get('/:id/print', async (req, res) => {
         let itemId = 0
         let totalValue = 0
 
-        const budgetItems = budget!.budgetItems.map((item) => {
+        const budgetItems = budget.budgetItems.map((item) => {
             itemId++
             totalValue += item.quantity * item.unitValue
             return [
@@ -201,12 +211,12 @@ budgetRouter.get('/:id/print', async (req, res) => {
             pageSize: 'A4',
             content: [
                 {
-                    image: `${__dirname}/../assets/logo_artfaav_rgb.png`,
+                    image: budget.tenant.logo,
                     width: 150,
                     style: 'center'
                 },
                 {
-                    text: `Cliente: ${budget!.client.name}`,
+                    text: `Cliente: ${budget.client.name}`,
                     style: 'subheader',
                     alignment: 'left'
                 },
@@ -294,9 +304,19 @@ budgetRouter.get('/:id/contract/print', async (req, res) => {
             include: {
                 vendor: true,
                 budgetItems: true,
-                client: true
+                client: true,
+                tenant: {
+                    select: {
+                        logo: true
+                    }
+                }
             }
         })
+
+        if (!budget) {
+            res.status(204).send()
+            return
+        }
 
         // Define font files
         var fonts = {
@@ -345,7 +365,7 @@ budgetRouter.get('/:id/contract/print', async (req, res) => {
             pageSize: 'A4',
             content: [
                 {
-                    image: `${__dirname}/../assets/logo_artfaav_rgb.png`,
+                    image: budget.tenant.logo,
                     width: 150,
                     style: 'center',
                     alignment: 'center'
